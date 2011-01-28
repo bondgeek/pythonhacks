@@ -1,0 +1,17 @@
+From the swig documentation
+   
+   http://www.swig.org/Doc1.3/Python.html
+   
+Build the module
+
+$ swig -python example.i
+$ python setup.py build_ext --inplace
+
+
+Using the module
+
+$ python
+>>> import example
+>>> example.fact(4)
+24
+>>>
