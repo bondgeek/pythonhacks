@@ -3,7 +3,7 @@ from scipy import linspace, polyval, polyfit, sqrt, stats, randn
 import matplotlib.pyplot as plt
 
 # Sample data creation
-n = 50
+n = 500
 t = linspace(-5, 5, n)
 
 # parameters 
@@ -30,7 +30,7 @@ plt.title("linear regression example")
 plt.plot(t, y, 'g.--')
 plt.plot(t, yn, 'k.')
 plt.plot(t, yr, 'r.-')
-plt.legend(('original', 'plus noise', 'regress'))
+plt.legend(('original', 'plus noise', 'regress'), loc='upper left')
 
 plt.show()
 
@@ -41,3 +41,4 @@ print("\nstats.linregress")
 print("\n m %s b %s stderr %s r^2 %s pval %s" % 
       (m_s, b_s, stderr, r_sqrd, p_val))
 
+0
