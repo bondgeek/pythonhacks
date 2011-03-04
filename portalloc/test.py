@@ -7,16 +7,25 @@ from bgpy import PathJoin
 
 import numpy as np
 
-returns_file = PathJoin(DATADIR, "Benchmarks", "AllocationStudy.xls")
-returns = xl.XLdb(returns_file, sheet_index=1)
+data_file = PathJoin(DATADIR, "Benchmarks", "AllocationStudy.xls")
+dailyseries = xl.XLdb(data_file, startrow=9, sheet_index=0)
 
+# index values
+spx = [dailyseries[dt]['SPX'] for dt in dailyseries.refcolumn
+          if dailyseries[dt]['SPX']]
 
-spx_tr = [returns[dt]['SPXTotalReturn'] for dt in returns.refcolumn
-          if returns[dt]['SPXTotalReturn']]
-leh_tr = [returns[dt]['LEHAGG_TR'] for dt in returns.refcolumn
-          if returns[dt]['LEHAGG_TR']]
+# returns vector
+U = [np.log(spx[n]/spx[n-1]) for n in range(1, len(spx))]
 
-spx_x = [returns[dt]['SPXExcess'] for dt in returns.refcolumn
-          if returns[dt]['SPXExcess']]
-leh_x = [returns[dt]['LEHExcess'] for dt in returns.refcolumn
-          if returns[dt]['LEHExcess']]
+#initial estimate
+vol0 = np.var(U)
+
+def ewma_est(L_, sigma_, xret_):
+    return L_ * sigma_ + (1. - L_) * xret_ * xret_
+
+def likelihood(sigma_, xret_):
+    return -(np.log(sigma_) + (xret_ * xret_) / sigma_)
+
+def mle(L_, rets):
+    pass
+    
