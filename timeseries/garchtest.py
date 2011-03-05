@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+import sys; sys.path.append("/Users/bartmosley/sandbox")
+
 import bgpy.QL as ql
 import bgpy.xldb as xl
 
@@ -16,16 +19,29 @@ spx = [dailyseries[dt]['SPX'] for dt in dailyseries.refcolumn
 
 # returns vector
 U = [np.log(spx[n]/spx[n-1]) for n in range(1, len(spx))]
+#mu = np.average(U)
+#U = [u-mu for u in U]
 
 #initial estimate
 vol0 = np.var(U)
 
-def ewma_est(L_, sigma_, xret_):
+def ewma(L_, sigma_, xret_):
     return L_ * sigma_ + (1. - L_) * xret_ * xret_
 
-def likelihood(sigma_, xret_):
+def loglikelihood_x(sigma_, xret_):
     return -(np.log(sigma_) + (xret_ * xret_) / sigma_)
 
-def mle(L_, rets):
-    pass
+def loglikelihood(L_, ydata, v0_):
+    
+    variances =[v0_]
+
+    for n in range(1, len(ydata)):
+        vnew = ewma(L_, variances[n-1], ydata[n-1])
+        
+        variances.append(vnew)
+    
+    ll = [loglikelihood_x(v, r) for v, r in zip(variances, ydata) ]
+    for l in ll:
+        print l
+    return sum([loglikelihood_x(v, r) for v, r in zip(variances, ydata) ])
     
