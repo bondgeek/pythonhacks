@@ -1,108 +1,155 @@
-#! /usr/bin/env python
-import sys; sys.path.append("/Users/bartmosley/sandbox")
-
-import matplotlib.pyplot as plt
-
-import bgpy.QL as ql
-import bgpy.xldb as xl
-from bgpy import PathJoin
-
 import numpy as np
 from scipy.optimize import fmin
 
-from alprion import DATADIR
-
-# data files
-spx_file = PathJoin(DATADIR, "Benchmarks", "AllocationStudy.xls")
-spxdaily = xl.XLdb(spx_file, startrow=9, sheet_index=0)
-
-dow_file = PathJoin(DATADIR, "Benchmarks", "dow.xls")
-dowdaily = xl.XLdb(dow_file, sheet_index=0)
-
-# index values
-if 'spx' not in vars():
-    spx = [spxdaily[dt]['SPX'] for dt in spxdaily.refcolumn
-              if spxdaily[dt]['SPX']]
-          
-    dow = [dowdaily[dt]['Dow'] for dt in dowdaily.refcolumn
-              if dowdaily[dt]['Dow']]
-          
-# returns vector
-R = [np.log(dow[n]/dow[n-1]) for n in range(1, len(dow))]
-mu = np.average(R)
-V = np.var(R)
-U = [u-mu for u in R]
-
-#initial estimate
-vol0 = np.var(U)
-
-def ewma(L_, sigma_, xret_):
-    return L_ * sigma_ + (1. - L_) * xret_ * xret_
-
-def gVar(L_, var, ret):
-    omega, beta, gamma = L_
+def garch_var(parms, variance, observed_value):
+    '''
+    GARCH variance estimate
     
-    return omega + beta*var + gamma*(ret**2)
-
-def loglikelihood_x(sigma_, xret_):
-    return -(np.log(sigma_) + (xret_ * xret_) / sigma_)
-
-def gLogLike(parms, ydata):
-    mu, beta, gamma = parms
+    parms:          GARCH parameters
+    variance:       previous variance estimate
+    observed_value: previous observed value.
     
-    V0 = np.var(ydata)
+    '''
+    omega, alpha, beta = parms
+
+    return omega + alpha*variance + beta*observed_value*observed_value
+
+def loglikelihood_x(variance, observed):
+    '''
+    Log Likelihood of observation, for zero-mean normal probability 
+    distribution function.
+    
+    '''
+    return -(np.log(variance) + (observed * observed) / variance)
+
+def arch_loglike(parms, ydata, V0=None):
+    '''
+    Log likelihood function for GARCH estimation.
+    
+    parms:  mu, alpha, [beta]  
+            mu: long term drft
+            alpha: first persistence parameter
+            beta: if only two parameters are given
+                  model is assumed to be EWMA, beta=(1-alpha)
+            
+            NOTE: model constrains gamma = (1-alpha-beta) > 0.
+            
+    ydata:  timeseries to be fitted via mle
+    V0:     long run variance
+    
+    '''
+    # if no long term variance estimate is given, use sample variance
+    V0 = np.var(ydata) if not V0 else V0
+    
+    if len(parms) > 2:
+        mu, alpha, beta = parms
         
+        # if omega is negative, use EWMA (i.e. omega = 0.)
+        omega = np.max( (0., V0 * (1.0 - beta - alpha)) )
+        
+    else:
+        mu, alpha = parms
+        
+        omega = 0.0
+        beta = (1. - alpha)
+        
+    # use estimate of drift to normalize data
     y = [u - mu for u in ydata]
     
-    omega = V0 * (1. - beta - gamma)
-    
+    # create time series of variance estimates, 
+    # set initial value to long term variance
     variances = [V0]
     for n in range(1, len(y)):
-        vnew = gVar((omega, beta, gamma), variances[n-1], y[n-1])
-        variances.append(vnew)
-        
+        variances.append( garch_var((omega, alpha, beta), variances[n-1], y[n-1]) )
+         
     return -sum([loglikelihood_x(v, r) for v, r in zip(variances, y) ])
+ 
+def garch_estimator(yseries, x0):
+    '''
+    MLE estimation of GARCH parameters and drift for time series
     
-def ewmaLogLike(L_, ydata, v0_):
-    l = L_[0]
+    yseries:    time series vector
+    x0:         mu, alpha, beta
+                initial guess of parameter values
+                mu: long term drft
+                alpha: first persistence parameter
+                beta: if only two parameters are given
+                      model is assumed to be EWMA, beta=(1-alpha)
+            
+                NOTE: model constrains gamma = (1-alpha-beta) > 0.   
     
-    variances =[v0_]
-    for n in range(1, len(ydata)):
-        vnew = ewma(l, variances[n-1], ydata[n-1])        
-        variances.append(vnew)
-
-    return -sum([loglikelihood_x(v, r) for v, r in zip(variances, ydata) ])
-
-def ewmaLogLike2(L_, ydata):
-    mu, l = L_
-    V0 = np.var(ydata)
+    returns a dictionary with keys:
+    v:          time series of variance estimates
+    mu:         drift estimate
+    garch:      estimated GARCH parameters
+    
+    Uses scipy.optimize.fmin to minimize the negative of the likelihood function.
+    
+    '''
+    # sample variance 
+    var0 = np.var(yseries)
+    
+    # maximum likelihood estimates of GARCH parameters
+    mleEst = fmin(arch_loglike, x0, args=(yseries, var0), xtol=1e-8)
+    if len(x0) > 2:
+        mu, alpha, beta = mleEst    
+        omega = var0 * (1. - alpha - beta)
+    else:
+        mu, alpha = mleEst    
+        omega = 0.
+        beta = (1. - alpha)
         
-    y = [u - mu for u in ydata]
+    variance_est = [var0]
+    for n in range(len(yseries)):
+        variance_est.append( garch_var((omega, alpha, beta), 
+                                       variance_est[n-1], 
+                                       yseries[n-1]) )
     
-    variances =[V0]
-    for n in range(1, len(ydata)):
-        vnew = ewma(l, variances[n-1], y[n-1])        
-        variances.append(vnew)
+    return {'v': variance_est, 'mu': mu, 'garch': (omega, alpha, beta)}
+ 
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    
+    import sys; sys.path.append("/Users/bartmosley/sandbox")
+    import bgpy.xldb as xl
+    from bgpy import PathJoin
 
-    return -sum([loglikelihood_x(v, r) for v, r in zip(variances, y) ])
+    from alprion import DATADIR
+    
+    # data files
+    spx_file = PathJoin(DATADIR, "Benchmarks", "AllocationStudy.xls")
+    spxdaily = xl.XLdb(spx_file, startrow=9, sheet_index=0)
+    
+    dow_file = PathJoin(DATADIR, "Benchmarks", "dow.xls")
+    dowdaily = xl.XLdb(dow_file, sheet_index=0)
+    
+    
+    # index values
+    if 'spx' not in vars():
+        spx = [spxdaily[dt]['SPX'] for dt in spxdaily.refcolumn
+                  if spxdaily[dt]['SPX']]
+              
+        dow = [dowdaily[dt]['Dow'] for dt in dowdaily.refcolumn
+                  if dowdaily[dt]['Dow']]
+              
+    # returns vector
+    retseries = [np.log(dow[n]/dow[n-1]) for n in range(1, len(dow))]
 
-# solve for smoothing factor in ewma estimate
-ewmaEst = fmin(ewmaLogLike2, [0., .86], args=(U, ), xtol=1e-8)
-ewmaVarEst = [ V ]
-for n in range(len(U)):
-    ewmaVarEst.append( ewma(ewmaEst[1], ewmaVarEst[n-1], U[n-1]) )
-
-ewmaVolEst = [np.sqrt(v*252) for v in ewmaVarEst]
-
-garchEst = fmin(gLogLike, [.0, .5, .5], args=(R, ), xtol=1e-8)
-mu, beta, gamma = garchEst
-gVarEst = [V]
-for n in range(len(U)):
-    omega = V * (1. - beta - gamma)
-    gVarEst.append( gVar((omega, beta, gamma), gVarEst[n-1], R[n-1]) )
-
-gVolEst = [np.sqrt(v*252) for v in gVarEst]
-
-plt.plot(gVolEst)
-plt.plot(ewmaVolEst)
-plt.show()
+    print("\nEWMA Estimates")
+    ewmaVarEst = garch_estimator(retseries,  [0., .86])
+    ewmaVolEst = [np.sqrt(v*252) for v in ewmaVarEst['v']]
+    print("\nResults\ndrift: %s" % ewmaVarEst['mu'])
+    print("lambda: %s" % ewmaVarEst['garch'][1])
+    
+    print("\nGARCH Estimates")
+    gVarEst = garch_estimator(retseries, [0., .5, .5])
+    gVolEst = [np.sqrt(v*252) for v in gVarEst['v']]
+    print("\nResults\ndrift: %s" % gVarEst['mu'])
+    print("alpha: %s \nbeta: %s \ngamma: %s" % (gVarEst['garch'][1],
+                                                gVarEst['garch'][2],
+                                                gVarEst['garch'][0]))
+    
+    #plot results
+    plt.plot(gVolEst)
+    plt.plot(ewmaVolEst)
+    plt.show()
