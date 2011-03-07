@@ -15,8 +15,10 @@ y = polyval((m, b), t)
 yn = y + randn(n)
 
 # linear regression with -polyfit
-#   yr = mr * x + b + err
+#   yr = mr * x + br + err
+
 mr, br = polyfit(t, yn, 1)
+
 yr = polyval((mr, br), t)    
 
 # standard error
