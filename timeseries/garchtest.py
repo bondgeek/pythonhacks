@@ -106,7 +106,7 @@ def garch_estimator(yseries, x0):
                                        yseries[n-1]) )
     
     return {'v': variance_est, 'mu': mu, 'garch': (omega, alpha, beta)}
- 
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
@@ -123,7 +123,6 @@ if __name__ == "__main__":
     dow_file = PathJoin(DATADIR, "Benchmarks", "dow.xls")
     dowdaily = xl.XLdb(dow_file, sheet_index=0)
     
-    
     # index values
     if 'spx' not in vars():
         spx = [spxdaily[dt]['SPX'] for dt in spxdaily.refcolumn
@@ -134,7 +133,7 @@ if __name__ == "__main__":
               
     # returns vector
     retseries = [np.log(dow[n]/dow[n-1]) for n in range(1, len(dow))]
-
+    
     print("\nEWMA Estimates")
     ewmaVarEst = garch_estimator(retseries,  [0., .86])
     ewmaVolEst = [np.sqrt(v*252) for v in ewmaVarEst['v']]
@@ -148,7 +147,7 @@ if __name__ == "__main__":
     print("alpha: %s \nbeta: %s \ngamma: %s" % (gVarEst['garch'][1],
                                                 gVarEst['garch'][2],
                                                 gVarEst['garch'][0]))
-    
+
     #plot results
     plt.plot(gVolEst)
     plt.plot(ewmaVolEst)
