@@ -32,6 +32,8 @@ for h in hdr:
     
     if not rowx:
         rowx = series(label=h)
+    else:
+        rowx = rowx[0]
     
     rowx.name = h + " ML Index"
     rowx.save()
