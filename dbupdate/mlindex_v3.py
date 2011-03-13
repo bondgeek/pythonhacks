@@ -86,12 +86,44 @@ def read_sheet1(book, sheet_index):
     
     return qdata
 
+def fileout(idxdata, hdr_, filename="updatedb.csv", mode='a', startkey=1):
+    
+    hdr_idx = [(n, series.get(label=hdr_[n])[0].id) for n in range(len(hdr_))]
+    
+    f = open(filename, mode)
+    
+    key_id = startkey
+    for key in idxdata.keys():
+        instr_id = instruments.get(ticker=key)[0].id
+        print("key/id: %s / %s, rows: %s" % (key, instr_id, key_id))
+        
+        for dt in idxdata[key]:
+            rowx = idxdata[key][dt]
+            
+            for n, idx in hdr_idx:
+                
+                f.write("%d,%s,%d,%d,%s\n" % (key_id,
+                                                  dt,
+                                                  instr_id,
+                                                  idx,
+                                                  rowx[n]) )
+                    
+                key_id += 1
+    
+    print("writing file: %s" % filename)
+    f.close()
+    
+    print("Rows %s" % key_id)
+    return key_id
+    
 def updatedb(idxdata, hdr_):
     
     hdr_idx = [(n, series.get(label=hdr_[n])[0].id) for n in range(len(hdr_))]
-
+    
+    key_id = startkey
     for key in idxdata.keys():
         instr_id = instruments.get(ticker=key)[0].id
+        print("key/id: %s / %s, rows: %s" % (key, instr_id, key_id))
         
         for dt in idxdata[key]:
             rowx = idxdata[key][dt]
@@ -110,10 +142,12 @@ def updatedb(idxdata, hdr_):
                 ts.value = rowx[n]
                 ts.save()
 
+    return timeseries.db.conn.lastrowid()
+    
 if __name__ == "__main__":
 
     indexfile = PathJoin(DROPBOX, "MarketData", "Benchmarks", "IndexData.xls")
-     
+    outputfile = PathJoin(DATADIR, "mlindex.out") 
     # data structure
     hdr = ['TRIDX', 'PRIDX', 'AvgMty', 'MtyW',   'MDur', 'MDurW',
            'YTM',   'YTW',   'NumIss', 'ParVal', 'Cpn',  'CpnMV']
@@ -121,12 +155,14 @@ if __name__ == "__main__":
     if 'index_book' not in vars():
         index_book = xlrd.open_workbook(indexfile, on_demand=True)
     
-    sheets = [6, 7, 8, 9, 10, 11, 12]
-    for sh in sheets:
-        sh_data = read_sheet1(index_book, sh)
-        updatedb(sh_data, hdr)
-        
+    print("horizontal")
     sheets = [2, 3]
     for sh in sheets:
+        sh_data = read_sheet2(index_book, sh, hdr)
+        lastkey_id = fileout(sh_data, hdr, outputfile, 'w')
+    
+    print("vertical")
+    sheets = [6, 7, 8, 9, 10, 11, 12]    
+    for sh in sheets:
         sh_data = read_sheet1(index_book, sh)
-        updatedb(sh_data, hdr)
+        lastkey_id = fileout(sh_data, hdr, outputfile, 'a', lastkey_id+1)
