@@ -1,3 +1,5 @@
+from datetime import date
+
 from bgpy.xldb import XLdb
 from alprion import DROPBOX, PathJoin, DATADIR
 
@@ -34,6 +36,22 @@ rkeys = ['TRCoreLong',
           'HTRRiskLong Int'
           ]
 
+ekeys = [ 'ERCoreLong', 
+          'ERCoreLong Int', 
+          'ERCoreIntermediate',
+          'ERCoreShort Int',
+          'ERCoreShort',
+          'ERRiskLong',
+          'ERRiskLong Int',
+          'ERHCoreLong', 
+          'ERHCoreLong Int', 
+          'ERHCoreIntermediate',
+          'ERHCoreShort Int',
+          'ERHCoreShort',
+          'ERHRiskLong',
+          'ERHRiskLong Int'
+          ]
+
 
 rdata = [[] for k in rkeys]
 covmtx = {}
@@ -47,3 +65,10 @@ for dt in studydata.refcolumn[1:]:
         covmtx[dt] = np.cov(rdata)
 
 
+dt0 = date(2010, 12, 31)
+shortrate = studydata[dt0]['Funding']
+ereturns = [studydata[dt0][k] - shortrate for k in ekeys]
+
+CM = np.matrix(covmtx[dt0])
+
+var = np.diag(CM)
