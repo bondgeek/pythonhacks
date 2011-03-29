@@ -38,4 +38,4 @@ for dt in studydata.refcolumn[1:]:
     if len(rdata[0]) > 30:
         covmtx[dt] = np.cov(rdata)
 
-
+fdfd =  [studydata[dt]['FDFD'] for dt in studydata.refcolumn[1:]]
