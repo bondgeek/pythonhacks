@@ -18,21 +18,29 @@ if 'studydata' not in vars():
                      startrow=9, 
                      idx_column=1)
 
-prkeys = ['PRCoreLong', 
-          'PRCoreLong Int', 
-          'PRCoreIntermediate',
-          'PRCoreShort Int',
-          'PRCoreShort',
-          'PRRiskLong',
-          'PRRiskLong Int'
+rkeys = ['TRCoreLong', 
+          'TRCoreLong Int', 
+          'TRCoreIntermediate',
+          'TRCoreShort Int',
+          'TRCoreShort',
+          'TRRiskLong',
+          'TRRiskLong Int',
+          'HTRCoreLong', 
+          'HTRCoreLong Int', 
+          'HTRCoreIntermediate',
+          'HTRCoreShort Int',
+          'HTRCoreShort',
+          'HTRRiskLong',
+          'HTRRiskLong Int'
           ]
 
-rdata = [[] for k in prkeys]
+
+rdata = [[] for k in rkeys]
 covmtx = {}
 for dt in studydata.refcolumn[1:]:
     
-    for n in range(len(prkeys)):
-        k = prkeys[n]
+    for n in range(len(rkeys)):
+        k = rkeys[n]
         rdata[n].append(studydata[dt][k])        
 
     if len(rdata[0]) > 30:
