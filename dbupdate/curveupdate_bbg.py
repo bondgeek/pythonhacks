@@ -18,6 +18,7 @@ if __name__ == "__main__":
     
     curves = [#sheet_index, ticker, outfile
              (0, "USSW", "ussw.out"),
+             (1, "USGG", "usgg.out"),
              (2, "BMARATIO", "bmaratio.out"),
              (3, "USSV", "ussv.out"),
              (4, "MMA_AAA", "mma.out"),
@@ -29,6 +30,7 @@ if __name__ == "__main__":
                for n, t, f in curves]
             
     nrow = timeseries.max_id()+1
+    print("\n\nStarting with row: %s\n\n" % nrow)
     
     for sh_num, ticker, filename, instr_id, curvedata in curves:
         tenors = dict( [(tnr, series.from_label(tnr)) 
@@ -46,7 +48,7 @@ if __name__ == "__main__":
                                                       curvedata[dt][tnr]) )
                 nrow += 1
     
-        print("Rows: %s" % nrow)
+        print("\nRows: %s" % nrow)
         print("Writing file: %s" % outfile.name)
         outfile.close()
         
