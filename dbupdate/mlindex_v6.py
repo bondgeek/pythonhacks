@@ -147,7 +147,7 @@ def updatedb(idxdata, hdr_):
 if __name__ == "__main__":
 
     indexfile = PathJoin(DROPBOX, "MarketData", "Benchmarks", 
-                         "INDEX20110429update.xls")
+                         "INDEXUpdate.xls")
                          
     outputfile = PathJoin(DATADIR, "mlindex.out") 
         
@@ -172,9 +172,12 @@ if __name__ == "__main__":
 
     print("vertical")
     #sheets start with 1, sheet0 has column headers
-    sheets = [1]
+    sheets = [1, 2]
     for sh in sheets:
         sh_data = read_sheet1(index_book, sh)
         lastkey_id = fileout(sh_data, hdr, outputfile, fmode, lastkey_id+1)
         fmode = 'a'
     
+    print("\nTo load data in marketdb sqlite3 database: \n%s\n%s" %
+         ('  sqlite> .separator ","', 
+          '  sqlite> .import Data/mlindex.out timeseries') )
