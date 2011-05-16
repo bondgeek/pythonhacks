@@ -1,14 +1,14 @@
-import urllib2
-import re
-
-from datetime import date
-from BeautifulSoup import BeautifulSoup
-
 """
 Google Finance History,
 Thanks to:  http://code.activestate.com/recipes/576495/
 
 """
+
+import urllib2
+import re
+
+from datetime import date
+from BeautifulSoup import BeautifulSoup
 
 gmonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

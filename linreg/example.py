@@ -43,4 +43,3 @@ print("\nstats.linregress")
 print("\n m %s b %s stderr %s r^2 %s pval %s" % 
       (m_s, b_s, stderr, r_sqrd, p_val))
 
-0
