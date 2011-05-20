@@ -2,6 +2,8 @@ from scipy import linspace, polyval, polyfit, sqrt, stats, randn
 
 import matplotlib.pyplot as plt
 
+from matplotlib.pylab import *
+
 # Sample data creation
 n = 500
 t = linspace(-5, 5, n)
