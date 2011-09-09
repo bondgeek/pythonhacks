@@ -1,11 +1,12 @@
 #! /usr/bin/env python
+from os.path import join
 
 from datetime import date
 
-from alprion import DROPBOX, DATADIR, PathJoin
+from alprion import DROPBOX, DATADIR
 from bgpy.xldb import XLdb
 
-import alprion.db.marketdb as marketdb
+from alprion.db import marketdb
 
 timeseries = marketdb.Timeseries
 series = marketdb.Series
@@ -14,14 +15,14 @@ instruments = marketdb.Instruments
 
 if __name__ == "__main__":
 
-    crv_file = PathJoin(DROPBOX, "MarketData/Benchmarks/BBGCurves_static.xls")
+    crv_file = join(DROPBOX, "MarketData/Benchmarks/BBGCurves_static.xls")
     
     curves = [#sheet_index, ticker, outfile
              (0, "USSW", "ussw.out"),
              (1, "USGG", "usgg.out"),
              (2, "BMARATIO", "bmaratio.out"),
              (3, "USSV", "ussv.out"),
-             (4, "MMA_AAA", "mma.out"),
+             (4, "MMAI", "mma.out"),
              ]
     
     curves = [(n, t, f, 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     for sh_num, ticker, filename, instr_id, curvedata in curves:
         tenors = dict( [(tnr, series.from_label(tnr)) 
                         for tnr in curvedata.hdr[1:]] )
-        outfile = open(PathJoin(DATADIR, filename), "w") 
+        outfile = open(join(DATADIR, filename), "w") 
     
         for dt in curvedata.refcolumn:
             for tnr in tenors:
