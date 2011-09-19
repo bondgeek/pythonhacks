@@ -27,7 +27,7 @@ ax.xaxis.set_minor_locator(alldays)
 ax.xaxis.set_major_formatter(weekFormatter)
 #ax.xaxis.set_minor_formatter(dayFormatter)
 
-#plot_day_summary(ax, quotes, ticksize=3)
+#plot_day_summary(ax, quq[otes, ticksize=3)
 candlestick(ax, quotes, width=0.6)
 
 ax.xaxis_date()
