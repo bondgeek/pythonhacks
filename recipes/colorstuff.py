@@ -63,13 +63,15 @@ def color_hsv_rgb(h, s, v):
     
     return None
 
-tests_good = ["#FFF", "#FFFFFF", "FFF", "FFFFFF", "#003333"]
-tests_bad = ["#GGG", "00H", "A", "FFF0", "GFGFGF", "FFFFFF00"]
-
-print("test valid codes:")
-for tst in tests_good:
-    print tst, color_html_rgb(tst)
-
-print("\ntest invalid codes:")
-for tst in tests_bad:
-    print tst, color_html_rgb(tst)
+if __name__ == "__main__":
+    
+    tests_good = ["#FFF", "#FFFFFF", "FFF", "FFFFFF", "#003333"]
+    tests_bad = ["#GGG", "00H", "A", "FFF0", "GFGFGF", "FFFFFF00"]
+    
+    print("test valid codes:")
+    for tst in tests_good:
+        print tst, color_html_rgb(tst)
+    
+    print("\ntest invalid codes:")
+    for tst in tests_bad:
+        print tst, color_html_rgb(tst)
