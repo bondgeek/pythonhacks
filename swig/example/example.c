@@ -2,7 +2,8 @@
 
 #include "example.h"
 
-int fact(int n) {
+int fact(int n) 
+{
     if (n < 0){ /* This should probably return an error, but this is simpler */
         return 0;
     }
