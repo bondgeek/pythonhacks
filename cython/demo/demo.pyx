@@ -2,11 +2,11 @@
 
 from libc.math cimport sin
 
-cdef double f(double x):
-    return sin(x*x)
+cdef double sin_c(double x):
+    return sin(x)
 
 def myfunc(x):
-    return f(x)
+    return sin_c(x)
 
 def fib(n):
     """Print the Fibonacci series up to n"""
