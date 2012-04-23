@@ -86,13 +86,10 @@ cdef class Leg:
         print "size:: ", self._size
         
         cdef int i
-        cdef _cf.SimpleCashFlow _thiscf
+        cdef _cf.CashFlow _thiscf
         for i in range(self._size):
             _cashflow = leg[i]
-            print("getting")
-            _thiscf = deref(_cashflow.get())
             
-            print("get: %s %s" % (i, _thiscf.amount()))
         
     property size:
         def __get__(self):

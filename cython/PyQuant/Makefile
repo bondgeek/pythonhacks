@@ -29,8 +29,8 @@ build:
 	python setup.py build_ext --inplace
 
 build2:
-	find quantlib/instruments -name \swaps.cpp -exec rm {} \;
-	find quantlib/instruments -name \bonds.cpp -exec rm {} \;
+#	find quantlib/instruments -name \swaps.cpp -exec rm {} \;
+#	find quantlib/instruments -name \bonds.cpp -exec rm {} \;
 	python setup2.py build_ext --inplace
     
 test:
