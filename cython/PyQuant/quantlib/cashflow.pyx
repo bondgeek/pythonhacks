@@ -58,7 +58,101 @@ cdef class SimpleCashFlow(CashFlow):
         return 'Simple Cash Flow: %f, %s' % (self.amount,
                                              self.date)
 
+    
+ctypedef vector[double] Rates
 
+cdef class RateLeg:
+    cdef shared_ptr[Rates]* _thisptr
+    cpdef Size _size
+    
+    def __cinit__(self):
+        self._thisptr = NULL
+
+    def __dealloc__(self):
+        if self._thisptr is not NULL:
+            self._thisptr = NULL
+            
+    def __init__(self, rates):
+        assert hasattr(rates, "__iter__"), "Class Leg must be iterable"
+        
+        self._thisptr = new shared_ptr[Rates](new Rates())
+        
+        cdef double rate
+        cdef shared_ptr[double] push_rate
+        #cdef shared_ptr[Rates]* _rates
+        #_rates = new shared_ptr[Rates](new Rates())
+        
+        for rate in rates:
+            push_rate = deref(new shared_ptr[double](&rate))
+            
+            print("push! %s %s" % (rate, deref(push_rate.get())))
+            
+            deref(self._thisptr).get().push_back(rate)
+        
+        self._size = deref(self._thisptr).get().size()
+        print("\ngo")
+        print("size %s " % self._size)
+        for i in range(self._size):
+            r = deref(self._thisptr).get().at(i)
+            print(">>%s %s " % (i, r))
+        
+    property size:
+        def __get__(self):
+            return self._size
+
+ctypedef vector[shared_ptr[double]] PRates
+
+cdef class PRateLeg:
+    cdef shared_ptr[PRates]* _thisptr
+    cpdef Size _size
+    
+    def __cinit__(self):
+        self._thisptr = NULL
+
+    def __dealloc__(self):
+        if self._thisptr is not NULL:
+            self._thisptr = NULL
+            
+    def __init__(self, rates):
+        assert hasattr(rates, "__iter__"), "Class Leg must be iterable"
+        
+        self._thisptr = new shared_ptr[PRates](new PRates())
+        
+        cdef double rate
+        cdef shared_ptr[double]* push_rate
+        
+        for rate in rates:
+            push_rate = new shared_ptr[double](&rate)
+            
+            print("push! %s %s" % (rate, deref(push_rate.get())))
+            
+            deref(self._thisptr).get().push_back(deref(push_rate))
+        
+        self._size = deref(self._thisptr).get().size()
+        print("\ngo")
+        print("size %s " % self._size)
+        for i in range(self._size):
+            r = deref(self._thisptr).get().at(i)
+            print(">>%s %s " % (i, deref(r.get())))
+        
+    property size:
+        def __get__(self):
+            return self._size    
+    dbg = """
+    property items:
+        def __get__(self):
+            cdef int i
+            cdef Rates _rates
+            item_list = []
+            
+            for i in range(self.size):
+                _rates = deref(self._thisptr.get())
+                r = deref(_rates[i].get())
+                print("r %s " % r)
+                item_list.append(r)
+                
+            return item_list
+    """     
 cdef class Leg:
 
     def __cinit__(self):
