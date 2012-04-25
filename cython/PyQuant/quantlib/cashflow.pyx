@@ -2,7 +2,7 @@
 from libcpp.vector cimport vector
 
 from cython.operator cimport dereference as deref
-
+cimport numpy as 
 cimport _cashflow as _cf
 cimport quantlib.time._date as _date
 
@@ -77,17 +77,15 @@ cdef class RateLeg:
         
         self._thisptr = new shared_ptr[Rates](new Rates())
         
-        cdef double rate
-        cdef shared_ptr[double] push_rate
-        #cdef shared_ptr[Rates]* _rates
-        #_rates = new shared_ptr[Rates](new Rates())
-        
-        for rate in rates:
-            push_rate = deref(new shared_ptr[double](&rate))
+        cdef double _rate
+        for _rate in rates:
             
-            print("push! %s %s" % (rate, deref(push_rate.get())))
-            
-            deref(self._thisptr).get().push_back(rate)
+            deref(self._thisptr).get().push_back(_rate)
+            print("push! %s >>> front/back: %s / %s" % 
+                        (_rate, 
+                         deref(self._thisptr).get().front(),
+                         deref(self._thisptr).get().back())
+                 )
         
         self._size = deref(self._thisptr).get().size()
         print("\ngo")
@@ -100,7 +98,7 @@ cdef class RateLeg:
         def __get__(self):
             return self._size
 
-ctypedef vector[shared_ptr[double]] PRates
+ctypedef vector[double*] PRates
 
 cdef class PRateLeg:
     cdef shared_ptr[PRates]* _thisptr
@@ -118,22 +116,26 @@ cdef class PRateLeg:
         
         self._thisptr = new shared_ptr[PRates](new PRates())
         
-        cdef double rate
-        cdef shared_ptr[double]* push_rate
-        
-        for rate in rates:
-            push_rate = new shared_ptr[double](&rate)
+        # TODO: use numpy
+        # http://wiki.cython.org/WrappingNumpy
+        cdef int i
+        cdef int _rsize = len(rates)
+        cdef double* _rates = <double *>rates
+        for i in range(_rsize):
+            deref(self._thisptr).get().push_back(_rate[i])
             
-            print("push! %s %s" % (rate, deref(push_rate.get())))
-            
-            deref(self._thisptr).get().push_back(deref(push_rate))
+            print("push! %s  >> front/back: %s / %s" % 
+                        (rates[i],
+                         deref(deref(self._thisptr).get().front()),
+                         deref(deref(self._thisptr).get().back())) 
+                  )
         
         self._size = deref(self._thisptr).get().size()
         print("\ngo")
         print("size %s " % self._size)
         for i in range(self._size):
             r = deref(self._thisptr).get().at(i)
-            print(">>%s %s " % (i, deref(r.get())))
+            print(">>%s %s " % (i, deref(r)))
         
     property size:
         def __get__(self):
