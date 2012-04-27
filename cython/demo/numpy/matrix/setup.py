@@ -14,7 +14,8 @@ if sys.platform == 'darwin':
 ext_modules=[
     Extension("matrix",
               sources=["matrix.pyx"],
-              include_dirs=INCLUDE_DIRS
+              include_dirs=INCLUDE_DIRS,
+              language="c++"
               )
     ]
 
