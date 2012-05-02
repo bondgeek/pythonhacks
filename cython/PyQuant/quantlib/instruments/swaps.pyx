@@ -1,13 +1,9 @@
 """
- Copyright (C) 2011, Enthought Inc
- Copyright (C) 2011, Patrick Henaff
+Adaptation of QuantLib/Swaps
 
- This program is distributed in the hope that it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- FOR A PARTICULAR PURPOSE.  See the license for more details.
 """
-
-include '../types.pxi'
+import datetime
+import numpy as np
 
 cimport _swaps
 
@@ -15,9 +11,9 @@ from cython.operator cimport dereference as deref
 from libcpp.vector cimport vector
 from libcpp cimport bool as cbool
 
+cimport quantlib.time._date as _date
 from quantlib.handle cimport Handle, shared_ptr, RelinkableHandle
 from quantlib.time._calendar cimport BusinessDayConvention
-cimport quantlib.time._date as _date
 from quantlib.time._daycounter cimport DayCounter as QlDayCounter
 from quantlib.time._schedule cimport Schedule as QlSchedule
 from quantlib.time.calendar cimport Calendar
@@ -30,10 +26,7 @@ from quantlib.termstructures.yields.flat_forward cimport YieldTermStructure
 
 cimport quantlib._cashflow as _cf
 cimport quantlib.cashflow as cf
-
-import datetime
-
-        
+      
 cdef class Swap:
     """ Base swap class
 
@@ -50,11 +43,28 @@ cdef class Swap:
         if self._thisptr is not NULL:
             del self._thisptr
     
-    def __init__(self, cf.Leg firstLeg, cf.Leg secondLeg):
-        # TODO:  cast args to shared_ptr and Leg, then call
+    def __init__(self, firstLeg, secondLeg):
+        """
+        Each Leg is an array of tuples (date, amount)
+        """
+        cdef _cf.Leg _Leg1 
+        cdef _cf.Leg _Leg2
+        cdef int n1 = len(firstLeg)
+        cdef int n2 = len(secondLeg)
+        cdef int i
+    
+        cdef Rate thisamount
+        cdef Date thisdate
+        for i from 0 <= i < n1:
+            thisamount, thisdate = firstLeg[i]
+            _Leg1.push_back(shared_ptr[_cf.SimpleCashFlow](new _cf.SimpleCashFlow(thisamount, 
+                                                              deref(thisdate._thisptr.get())
+                                                              )
+                                                              ))
+        
         print("trying")
         self._thisptr = new shared_ptr[_swaps.Swap](\
-            new _swaps.Swap(deref(firstLeg._thisptr), deref(secondLeg._thisptr))
+            new _swaps.Swap(_Leg1, _Leg2)
             )
         print("wtf?")
         
