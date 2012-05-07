@@ -45,7 +45,7 @@ extension_paths  = [
  ('quantlib.instruments.bonds', ['quantlib/instruments/bonds.pyx']),
  ('quantlib.instruments.payoffs', ['quantlib/instruments/payoffs.pyx']),
  ('quantlib.instruments.option', ['quantlib/instruments/option.pyx']),
- #('quantlib.instruments.swaps', ['quantlib/instruments/swaps.pyx']),
+ ('quantlib.instruments.swaps', ['quantlib/instruments/swaps.pyx']),
  ('quantlib.math.optimization', ['quantlib/math/optimization.pyx']),
  ('quantlib.models.equity.bates_model', ['quantlib/models/equity/bates_model.pyx']),
  ('quantlib.models.equity.heston_model', ['quantlib/models/equity/heston_model.pyx']),

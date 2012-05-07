@@ -1,17 +1,9 @@
 include 'types.pxi'
 
-
-from libcpp.vector cimport vector
-
-from cython.operator cimport dereference as deref
-
 cimport _cashflow as _cf
-cimport quantlib.time._date as _date
 
 from quantlib.handle cimport shared_ptr
-from quantlib.time.date cimport Date, date_from_qldate
-
-from quantlib.handle cimport shared_ptr
+from libcpp.vector cimport vector
 
 cdef class CashFlow:
     cdef shared_ptr[_cf.CashFlow]* _thisptr
@@ -19,3 +11,7 @@ cdef class CashFlow:
 cdef class SimpleCashFlow(CashFlow):
     pass
 
+cdef class SimpleLeg:
+    cdef shared_ptr[vector[shared_ptr[_cf.CashFlow]]] *_thisptr
+    
+    

@@ -45,33 +45,25 @@ cdef class Swap:
     
     def __init__(self, firstLeg, secondLeg):
         """
-        Each Leg is an array of tuples (date, amount)
-        """
-        cdef _cf.Leg _Leg1 
-        cdef _cf.Leg _Leg2
-        cdef int n1 = len(firstLeg)
-        cdef int n2 = len(secondLeg)
-        cdef int i
-    
-        cdef Rate thisamount
-        cdef Date thisdate
-        for i from 0 <= i < n1:
-            thisamount, thisdate = firstLeg[i]
-            _Leg1.push_back(shared_ptr[_cf.SimpleCashFlow](new _cf.SimpleCashFlow(thisamount, 
-                                                              deref(thisdate._thisptr.get())
-                                                              )
-                                                              ))
+        Each Leg is an array of tuples (amount, date)
         
-        print("trying")
-        self._thisptr = new shared_ptr[_swaps.Swap](\
-            new _swaps.Swap(_Leg1, _Leg2)
-            )
-        print("wtf?")
+        """
+        cdef vector[shared_ptr[_cf.CashFlow]] _leg1
+        cdef vector[shared_ptr[_cf.CashFlow]] _leg2
+        
+        cdef cf.SimpleLeg leg1 = cf.SimpleLeg(firstLeg)
+        cdef cf.SimpleLeg leg2 = cf.SimpleLeg(secondLeg)
+        
+        _leg1 = deref(leg1._thisptr.get())
+        _leg2 = deref(leg2._thisptr.get())
+        self._thisptr = new shared_ptr[_swaps.Swap]( \
+                                new _swaps.Swap(_leg1, _leg2)
+                                )
         
         
     property maturity:
         """ Swap maturity date. """
-        # TODO: error checking should be ported to bonds.pyx
+        
         def __get__(self):
             cdef _date.Date maturity_date
             if self._thisptr:
