@@ -1,6 +1,9 @@
 #include <boost/regex.hpp>
+#include <string>
+#include <cstring>
 
 namespace DP 
 {
-    int year(int date);
+    std::string year(std::string date);
+    
 }

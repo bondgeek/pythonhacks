@@ -1,12 +1,14 @@
 from libcpp cimport bool
+from libcpp.string cimport string
 from cython.operator cimport dereference as deref
 
 cdef extern from "_dateparser.hpp" namespace "DP":
-    cdef int year(int date)
+    cdef string year(string date)
 
-cdef inline int mydate(int _date):
-    cdef int nyear = year(_date)
-    return nyear
-
-def test(_date):
-    return mydate(_date)
+def mydate(char *_date):
+    cdef string *datestr = new string(_date)
+    cdef string nyear = year(deref(datestr))
+    
+    return int(nyear.c_str())
+   
+    
