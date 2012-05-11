@@ -7,3 +7,7 @@ cdef class RateHelper:
 cdef class RelativeDateRateHelper:
     cdef shared_ptr[_rh.RelativeDateRateHelper]* _thisptr
     
+# DepositRateHelper
+# FraRateHelper
+# FuturesRateHelper
+# SwapRateHelper
