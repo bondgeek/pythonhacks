@@ -1,8 +1,3 @@
-import numpy as np
-import matrix
+import dateparser as dp
 
-print("initializing")
-x = matrix.Test1(np.array([1., 2., 3., -8]))
-
-print("size: %s" % x.size)
-print("items:\n%s" % x.items)
+print dp.sdate(19800907)

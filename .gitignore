@@ -14,3 +14,6 @@ foo.txt
 # swig generated files
 swig/example/example.py
 swig/example/example_wrap.c
+# other
+.DS_Store
+

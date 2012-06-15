@@ -1,0 +1,2 @@
+cpdef int mydate(char *)
+
