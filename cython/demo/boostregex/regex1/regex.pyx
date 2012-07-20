@@ -11,16 +11,14 @@ cdef extern from 'boost/shared_ptr.hpp' namespace 'boost':
         long use_count()
         #void reset(shared_ptr[T]&)
 
-cdef extern from 'boost/regex.hpp' namespace 'boost';
+cdef extern from 'boost/regex.hpp' namespace 'boost':
     
     cdef cppclass match_results[T]:
         match_results(T&)
         
-        # size:
-       long size() const
-       bool empty() const
+        # size
+        long size() 
+        bool empty() 
        
-       # element access:
-       const_reference operator[](int n) 
-
-        
+        # element access:
+        const_reference operator[](int n) 
